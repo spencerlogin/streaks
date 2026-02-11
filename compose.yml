@@ -15,6 +15,9 @@ services:
           target: /app/src
           ignore:
             - node_modules/
+        - action: sync
+          path: frontend/public
+          target: /app/public
         - action: rebuild
           path: frontend/package.json
 
