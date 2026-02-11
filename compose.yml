@@ -1,0 +1,45 @@
+services:
+  frontend:
+    build:
+      context: frontend
+    ports:
+      - 8080:8080
+
+  backend:
+    build:
+      context: backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+        restart: true
+    stop_signal: SIGINT
+    ports:
+      - 5050:5050
+
+  mysql:
+    image: mysql:latest
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+      - MYSQL_USER=spencer
+      - MYSQL_DATABASE=streaks
+      - MYSQL_PASSWORD=password
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - 3306:3306
+      - 33060:33060
+    secrets:
+      - db-password
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 --password="$$(cat /run/secrets/db-password)" --silent']
+      interval: 3s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  mysql-data:
+
+secrets:
+  db-password:
+    file: db/password.txt
