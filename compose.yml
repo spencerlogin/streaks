@@ -2,8 +2,21 @@ services:
   frontend:
     build:
       context: frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+        restart: true
     ports:
       - 8080:8080
+    develop:
+      watch:
+        - action: sync
+          path: frontend/src
+          target: /app/src
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: frontend/package.json
 
   backend:
     build:
@@ -15,6 +28,22 @@ services:
     stop_signal: SIGINT
     ports:
       - 5050:5050
+    develop:
+      watch:
+        - action: sync
+          path: backend
+          target: /app
+          ignore:
+            - __pycache__/
+            - .venv/
+        - action: rebuild
+          path: backend/requirements.txt
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:5050/api/hello"]
+      interval: 5s
+      timeout: 1m
+      retries: 5
+      start_period: 15s
 
   mysql:
     image: mysql:latest
@@ -36,6 +65,18 @@ services:
       interval: 3s
       retries: 5
       start_period: 30s
+
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8090:80
+    environment:
+      - PMA_HOST=mysql
+    depends_on:
+      mysql:
+        condition: service_healthy
+        restart: true
 
 volumes:
   mysql-data:

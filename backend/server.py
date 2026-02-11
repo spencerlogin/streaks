@@ -11,22 +11,22 @@ CORS(app)
 
 count = 0
 
-@app.route("/api/hello")
+@app.route('/api/hello')
 def hello_world():
-    return "<p>Hello, World!</p>"
+    return {'res': 'Hello, World!'}, 200
 
-@app.route("/api/incrementCount")
+@app.route('/api/incrementCount')
 def incrementCount():
     global count
     count += 1
     return {'count': count}, 200
 
-@app.route("/api/getCount")
+@app.route('/api/getCount')
 def getCount():
     global count
     return {'count': count}, 200
 
-@app.route("/api/getUsers")
+@app.route('/api/getUsers')
 def getUsers():
     cnx = get_db_connection()
     cursor = cnx.cursor()
@@ -38,4 +38,4 @@ def getUsers():
     cursor.close()
     cnx.close()
     print(result)
-    return result
+    return result, 200
