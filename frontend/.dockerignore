@@ -1,6 +1,5 @@
 node_modules/
 .dockerignore
-.gitignore
-compose.yml
+.DS_Store
 Dockerfile
 eslint.config.js

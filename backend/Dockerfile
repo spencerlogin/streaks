@@ -10,4 +10,4 @@ ENV FLASK_APP=server.py
 
 EXPOSE 5050
 
-CMD ["flask", "run", "--host", "0.0.0.0", "--port", "5050"]
+CMD ["flask", "run", "--host", "0.0.0.0", "--port", "5050", "--debug"]
