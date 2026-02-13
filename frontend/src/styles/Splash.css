@@ -29,7 +29,7 @@ main {
 }
 
 .marvin {
-  background-image: url('public/marvin.gif');
+  background-image: url('/marvin.gif');
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: 100% 100%;

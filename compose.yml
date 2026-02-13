@@ -43,7 +43,7 @@ services:
           path: backend/requirements.txt
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:5050/api/hello"]
-      interval: 5s
+      interval: 5m
       timeout: 1m
       retries: 5
       start_period: 15s

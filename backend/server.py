@@ -9,6 +9,7 @@ from uuid import uuid4
 
 app = Flask(__name__)
 
+# TODO: put the user and password in a .env file
 def get_db_connection():
     return  mysql.connector.connect(user='spencer', password='password', host='mysql', database='streaks')
 
@@ -33,8 +34,8 @@ def signup_user():
         "SELECT username, email FROM users WHERE username=%s OR email=%s"
     )
     data = (username, email)
+    cursor.execute(query, data)
     userTaken, emailTaken = False, False
-    # TODO: Fix this, users are able to sign up with other users' emails and usernames
     try:
         for takenUsername, takenEmail in cursor:
             if username == takenUsername:
