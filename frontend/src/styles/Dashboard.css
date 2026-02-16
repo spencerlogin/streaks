@@ -4,3 +4,15 @@
         flex-direction: column;
     }
 }
+
+.streaks {
+    display: flex;
+}
+
+.delete-task {
+    color: white;
+    padding: 0.25em 0.5em;
+    p {
+        margin: 0;
+    }
+}

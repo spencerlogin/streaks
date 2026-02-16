@@ -191,9 +191,9 @@ def get_streaks():
             try:
                 cursor.execute(query, data)
                 streakDate = cursor.fetchone()
-                streaks.append({'name': streakName, "date": streakDate})
+                streaks.append({'name': streakName, 'date': streakDate, 'id': streakID})
             except Exception:
-                streaks.append({'name': streakName, "date": None})
+                streaks.append({'name': streakName, 'date': None, 'id': streakID})
         cursor.close()
         cnx.close()
         return {'streaks': streaks}, 200
@@ -230,6 +230,41 @@ def create_streak():
         cursor.close()
         cnx.close()
         return {'message': streakName}, 200
+    else:
+        cursor.close()
+        cnx.close()
+        return {'message': 'User not logged in'}, 400
+
+
+@app.route('/api/deleteStreak', methods=['POST'])
+def delete_streak():
+    streakID = request.json['id']
+    # check that user is logged in
+    token = request.cookies['token']
+    if token:
+        cnx = get_db_connection()
+        cursor = cnx.cursor()
+        query = (
+            'SELECT id FROM users WHERE token=%s'
+        )
+        data = [token]
+        cursor.execute(query, data)
+        userID = None
+        try:
+            userID = cursor.fetchone()[0]
+        except Exception:
+            return {'message': 'Token invalid'}, 400
+        
+        # remove streak from db
+        query = (
+            'DELETE FROM streaks WHERE id=%s'
+        )
+        data = [streakID]
+        cursor.execute(query, data)
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        return {'message': 'deleted'}, 200
     else:
         cursor.close()
         cnx.close()

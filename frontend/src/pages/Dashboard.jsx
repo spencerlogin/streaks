@@ -12,7 +12,26 @@ function Dashboard({ userInfo, loggedIn, logout }) {
             .then(res => res.json())
             .then(data => {
                 if (!ignore) {
-                    setStreaks(data['streaks'].map(streak => <li>{streak['name']}: {streak['date']}</li>))
+                    setStreaks(data['streaks'].map(streak => {
+                        return (
+                            <li key={streak['id']} className='streaks'>
+                                {streak['name']}: {streak['date']}
+                                <button onClick={() =>
+                                    fetch('/api/deleteStreak', { credentials: 'include', headers: { 'Content-Type': 'application/json' }, method: 'POST', body: JSON.stringify({ 'id': streak['id'] }) })
+                                        .then(res => {
+                                            if (!res.ok) {
+                                                alert(res.json()['message'])
+                                            } else {
+                                                setUpdate(!update)
+                                            }
+                                        })
+                                }
+                                className='delete-task'>
+                                    <p>x</p>
+                                </button>
+                            </li>
+                        )
+                    }))
                 }
             })
         return () => {
@@ -38,7 +57,7 @@ function Dashboard({ userInfo, loggedIn, logout }) {
 
     return (
         <>
-            <Navbar loggedIn={loggedIn} logout={logout}/>
+            <Navbar loggedIn={loggedIn} logout={logout} />
             <main>
                 <h1>{userInfo['firstName']}'s Streaks</h1>
                 <div className='streaks'>
