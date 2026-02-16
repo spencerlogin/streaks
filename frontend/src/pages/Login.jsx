@@ -1,7 +1,9 @@
+import { useNavigate } from 'react-router'
 import Navbar from '../components/Navbar.jsx'
 import '../styles/Login.css'
 
 function Login() {
+    let navigate = useNavigate()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -10,7 +12,7 @@ function Login() {
         const res = await fetch('http://localhost:5050/api/login', { method: 'POST', body: formData, credentials: 'include' })
         const data = await res.json()
         if(res.ok) {
-            alert('Success!')
+            navigate('/')
         }else {
             alert(data['message'])
         }
