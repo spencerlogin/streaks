@@ -1,0 +1,6 @@
+.create-streak {
+    form {
+        display: flex;
+        flex-direction: column;
+    }
+}
