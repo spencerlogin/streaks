@@ -19,6 +19,26 @@ CORS(app, resources=r'/api/*', allow_headers=['Content-Type'], supports_credenti
 def hello_world():
     return {'res': 'Hello, World!'}
 
+@app.route('/api/loggedIn', methods=['GET'])
+def checkLoggedIn():
+    try:
+        token = request.cookies['token']
+        cnx = get_db_connection()
+        cursor = cnx.cursor()
+        query = (
+            'SELECT email, username, firstName, lastName FROM users WHERE token=%s'
+        )
+        data = [token]
+        cursor.execute(query, data)
+        try:
+            email, username, firstName, lastName = cursor.fetchone()
+        except Exception:
+            return {'message': 'Token invalid'}, 400
+        return {'message': 'User logged in', 'email': email, 'username': username, 'firstName': firstName, 'lastName': lastName}, 200
+    except KeyError:
+        return {'message': 'User not logged in'}, 401
+
+ 
 @app.route('/api/signup', methods=['GET', 'POST'])
 def signup_user():
     email = request.form['email']
@@ -31,7 +51,7 @@ def signup_user():
     cnx = get_db_connection()
     cursor = cnx.cursor()
     query = (
-        "SELECT username, email FROM users WHERE username=%s OR email=%s"
+        'SELECT username, email FROM users WHERE username=%s OR email=%s'
     )
     data = (username, email)
     cursor.execute(query, data)
@@ -62,8 +82,8 @@ def signup_user():
         pwHash = ph.hash(password)
         token = sha256(str(uuid4()).encode('utf-8')).hexdigest()
         query = (
-            "INSERT INTO users (firstName, lastName, email, username, password, token)"
-            "VALUES (%s, %s, %s, %s, %s, %s)"
+            'INSERT INTO users (firstName, lastName, email, username, password, token)'
+            'VALUES (%s, %s, %s, %s, %s, %s)'
         )
         data = (firstName, lastName, email, username, pwHash, token)
         cursor.execute(query, data)
@@ -81,41 +101,136 @@ def login_user():
     cnx = get_db_connection()
     cursor = cnx.cursor()
     query = (
-        "SELECT username, email, firstName, lastName, password FROM users WHERE username=%s OR email=%s"
+        'select username, email, firstname, lastname, password from users where username=%s or email=%s'
     )
     data = (username, username)
     cursor.execute(query, data)
     try:
-        username, email, firstName, lastName, pwHash = cursor.fetchone()
-    except Exception:
+        username, email, firstname, lastname, pwhash = cursor.fetchone()
+    except exception:
         cursor.close()
         cnx.close()
-        return {'message': 'Invalid username or password'}, 400
+        return {'message': 'invalid username or password'}, 400
  
     # verify that the user even exists
-    if pwHash:
+    if pwhash:
         # verify hash from db against user-supplied pw
         ph = PasswordHasher.from_parameters(RFC_9106_HIGH_MEMORY)
         try:
-            ph.verify(pwHash, password)
+            ph.verify(pwhash, password)
             # generate session token
             token = sha256(str(uuid4()).encode('utf-8')).hexdigest()
             # add token to db
             query = (
-                "UPDATE users SET token=%s WHERE username=%s OR email=%s"
+                'update users set token=%s where username=%s or email=%s'
             )
             data = (token, username, username)
             cursor.execute(query, data)
             cnx.commit()
             cursor.close()
             cnx.close()
-            return ({'username': username, 'email': email, 'firstName': firstName, 'lastName': lastName}, 200, {'Set-Cookie': f'token={token}; SameSite=Strict; Max-Age=604800; HttpOnly'})
-        except VerifyMismatchError:
+            return ({'username': username, 'email': email, 'firstname': firstname, 'lastname': lastname}, 200, {'Set-Cookie': f'token={token}; samesite=strict; max-age=604800; httponly'})
+        except verifymismatcherror:
             cursor.close()
             cnx.close()
-            return {'message': 'Incorrect username/email or password'}, 401
+            return {'message': 'incorrect username/email or password'}, 401
 
     else:
         cursor.close()
         cnx.close()
-        return {'message': 'Invalid username or password'}, 400
+        return {'message': 'invalid username or password'}, 400
+
+@app.route('/api/logout', methods=['DELETE'])
+def logout_user(): 
+    token = request.cookies['token']
+    if token:
+        cnx = get_db_connection()
+        cursor = cnx.cursor()
+        query = (
+            'UPDATE users SET token=NULL WHERE token=%s'
+        )
+        data = [token]
+        cursor.execute(query, data)
+        cnx.commit()
+        cursor.close()
+        cnx.close() 
+        return ({'message': 'User logged out'}, 200, {'Set-Cookie': f'token=0; max-age=0'})
+    else:
+        return {'message': 'User not logged in'}, 400
+
+@app.route('/api/streaks', methods=['GET', 'POST'])
+def get_streaks():
+    # check that user is logged in
+    token = request.cookies['token']
+    if token:
+        cnx = get_db_connection()
+        cursor = cnx.cursor()
+        query = (
+            'SELECT id FROM users WHERE token=%s'
+        )
+        data = [token]
+        cursor.execute(query, data)
+        userID = None
+        try:
+            userID = cursor.fetchone()
+        except Exception:
+            return {'message': 'Token invalid'}, 400
+
+        # get streaks with userID
+        query = (
+            'SELECT * FROM streaks WHERE userID=%s'
+        )
+        data = (userID)
+        cursor.execute(query, data)
+        streaks = []
+        for streakID, streakName, _ in cursor:
+            query = (
+                'SELECT date FROM streak_history WHERE streakID=%s'
+            )
+            data = [streakID]
+            try:
+                cursor.execute(query, data)
+                streakDate = cursor.fetchone()
+                streaks.append({'name': streakName, "date": streakDate})
+            except Exception:
+                streaks.append({'name': streakName, "date": None})
+        cursor.close()
+        cnx.close()
+        return {'streaks': streaks}, 200
+    else:
+        return {'message': 'User not logged in'}, 400
+
+@app.route('/api/createStreak', methods=['GET', 'POST'])
+def create_streak():
+    streakName = request.form['streakName']
+    # check that user is logged in
+    token = request.cookies['token']
+    if token:
+        cnx = get_db_connection()
+        cursor = cnx.cursor()
+        query = (
+            'SELECT id FROM users WHERE token=%s'
+        )
+        data = [token]
+        cursor.execute(query, data)
+        userID = None
+        try:
+            userID = cursor.fetchone()[0]
+        except Exception:
+            return {'message': 'Token invalid'}, 400
+        
+        # add streak to db
+        query = (
+            'INSERT INTO streaks (name, userID)'
+            'VALUES (%s, %s)'
+        )
+        data = (streakName, userID)
+        cursor.execute(query, data)
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        return {'message': streakName}, 200
+    else:
+        cursor.close()
+        cnx.close()
+        return {'message': 'User not logged in'}, 400
