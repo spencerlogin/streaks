@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
-import Navbar from '../components/Navbar'
 import '../styles/Dashboard.css'
 
-function Dashboard({ userInfo, loggedIn, logout }) {
+function Dashboard({ userInfo }) {
     const [streaks, setStreaks] = useState([])
     const [update, setUpdate] = useState(false)
 
@@ -57,7 +56,6 @@ function Dashboard({ userInfo, loggedIn, logout }) {
 
     return (
         <>
-            <Navbar loggedIn={loggedIn} logout={logout} />
             <main>
                 <h1>{userInfo['firstName']}'s Streaks</h1>
                 <div className='streaks'>

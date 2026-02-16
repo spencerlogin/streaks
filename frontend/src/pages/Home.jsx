@@ -1,7 +1,7 @@
-import Dashboard from './Dashboard.jsx'
-import Splash from './Splash.jsx'
+import Dashboard from '../components/Dashboard.jsx'
+import Splash from '../components/Splash.jsx'
+import Navbar from '../components/Navbar.jsx'
 import { useState, useEffect } from 'react'
-import { useLocation } from 'react-router';
 
 function Home() {
     const [userInfo, setUserInfo] = useState({})
@@ -35,18 +35,9 @@ function Home() {
 
     return (
         <>
+            <Navbar loggedIn={loggedIn} logout={logout} />
             {!loggedIn && <Splash />}
-            {loggedIn &&
-                <>
-                    <Dashboard loggedIn={loggedIn} logout={logout} userInfo={userInfo} />
-                    <ul>
-                        <li>{userInfo['username']}</li>
-                        <li>{userInfo['email']}</li>
-                        <li>{userInfo['firstName']}</li>
-                        <li>{userInfo['lastName']}</li>
-                    </ul>
-                </>
-            }
+            {loggedIn && <Dashboard userInfo={userInfo} />}
         </>
     )
 }
