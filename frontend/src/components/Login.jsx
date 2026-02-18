@@ -1,6 +1,6 @@
-function Login({ action }) {
+function Login({ action, theme }) {
     return (
-        <form className='login-form' onSubmit={action}>
+        <form className={'login-form ' + theme} onSubmit={action} >
             <label htmlFor='username-field'>Email or Username</label>
             <input id='username-field' type='text' name='username' />
             <label htmlFor='password-field'>Password</label>

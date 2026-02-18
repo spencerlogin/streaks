@@ -1,13 +1,13 @@
-import '../styles/Splash.css'
+// import '../styles/Splash.css'
 
-function Splash() {
+function Splash({ theme }) {
 
   return (
-    <main>
+    <main className={theme}>
       <h1 id='welcome'>Welcome to Streaks!</h1>
       <div id='credits'>streaks by Spencer Login</div>
     </main>
-  );
+  )
 }
 
-export default Splash;
+export default Splash

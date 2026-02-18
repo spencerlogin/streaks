@@ -1,11 +1,13 @@
 import { useNavigate } from 'react-router'
+import { useState } from 'react'
 import Navbar from '../components/Navbar.jsx'
 import Login from '../components/Login.jsx'
 import Signup from '../components/Signup.jsx'
-import '../styles/Auth.css'
+// import '../styles/Auth.css'
 
-function Auth({ login }) {
+function Auth({ login, theme }) {
     let navigate = useNavigate()
+    const [themeState, setTheme] = useState(theme)
 
     const handleLogin = async (e) => {
         e.preventDefault()
@@ -34,10 +36,10 @@ function Auth({ login }) {
     }
     return (
         <>
-            <Navbar />
-            <main>
-                { login && <Login action={handleLogin} /> } 
-                { !login && <Signup action={handleSignup} /> }
+            <Navbar theme={themeState} action={setTheme} />
+            <main className={themeState}>
+                { login && <Login action={handleLogin} theme={themeState} /> } 
+                { !login && <Signup action={handleSignup} theme={themeState} /> }
             </main>
         </>
     )

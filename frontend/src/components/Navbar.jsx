@@ -1,10 +1,10 @@
-import { NavLink } from 'react-router';
-import '../styles/Navbar.css'
+import { NavLink } from 'react-router'
+// import '../styles/Navbar.css'
 
-function Navbar({ action, loggedIn, logout }) {
+function Navbar({ action, loggedIn, logout, theme }) {
 
   return (
-    <div className='navbar'>
+    <div className={'navbar ' + theme}>
       <div className='navgroup'>
         <NavLink to='/'>
           <h1>Streaks</h1>
@@ -12,7 +12,13 @@ function Navbar({ action, loggedIn, logout }) {
       </div>
       <div className='navgroup'>
         <label className='switch'>
-          <input type='checkbox' onClick={action} />
+          <input type='checkbox' onClick={() => {
+            if(theme === 'dark') {
+              action('light')
+            }else {
+              action('dark')
+            }
+          }} />
           <span className='slider round'></span>
         </label>
 

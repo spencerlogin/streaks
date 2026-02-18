@@ -1,6 +1,6 @@
-function Signup({ action }) {
+function Signup({ action, theme }) {
     return (
-        <form className='login-form' onSubmit={action}>
+        <form className={'login-form ' + theme } onSubmit={action}>
             <label htmlFor='email-field'>Email</label>
             <input id='email-field' type='text' placeholder='Email' name='email' />
             <label htmlFor='username-field'>Username</label>

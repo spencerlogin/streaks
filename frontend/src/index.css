@@ -4,8 +4,20 @@
   font-weight: 400;
 
   color-scheme: light dark;
+}
+
+.dark {
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
+  button {
+    background-color: #1a1a1a;
+    /* border-color: #9d9c9c; */
+  }
+}
+
+.light {
+  color: black;
+  background-color: white;
 }
 
 a {
@@ -69,4 +81,9 @@ button:hover {
   ul {
     padding: 0;
   }
+}
+
+.form-input {
+  display: flex;
+  flex-direction: column;
 }

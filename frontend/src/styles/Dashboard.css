@@ -2,11 +2,14 @@
     form {
         display: flex;
         flex-direction: column;
+        gap: 1em;
     }
 }
 
 .streaks {
     display: flex;
+    align-items: center;
+    gap: 1em;
 }
 
 .delete-task {
