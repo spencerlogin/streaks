@@ -1,11 +1,13 @@
 from flask import Flask, request
 from flask_cors import CORS
 import mysql.connector
+from mysql.connector.errors import IntegrityError
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from argon2.profiles import RFC_9106_HIGH_MEMORY
 from hashlib import sha256
 from uuid import uuid4
+from datetime import date
 
 app = Flask(__name__)
 
@@ -172,7 +174,7 @@ def get_streaks():
         cursor.execute(query, data)
         userID = None
         try:
-            userID = cursor.fetchone()
+            userID = cursor.fetchone()[0]
         except Exception:
             return {'message': 'Token invalid'}, 400
 
@@ -180,20 +182,18 @@ def get_streaks():
         query = (
             'SELECT * FROM streaks WHERE userID=%s'
         )
-        data = (userID)
+        data = [userID]
         cursor.execute(query, data)
+        streak_rows = cursor.fetchall()
         streaks = []
-        for streakID, streakName, _ in cursor:
+        for streakID, streakName, _ in streak_rows:
             query = (
                 'SELECT date FROM streak_history WHERE streakID=%s'
             )
             data = [streakID]
-            try:
-                cursor.execute(query, data)
-                streakDate = cursor.fetchone()
-                streaks.append({'name': streakName, 'date': streakDate, 'id': streakID})
-            except Exception:
-                streaks.append({'name': streakName, 'date': None, 'id': streakID})
+            cursor.execute(query, data)
+            streakDates = [date[0] for date in cursor.fetchall()]
+            streaks.append({'name': streakName, 'dates': streakDates, 'id': streakID})
         cursor.close()
         cnx.close()
         return {'streaks': streaks}, 200
@@ -257,9 +257,15 @@ def delete_streak():
         
         # remove streak from db
         query = (
-            'DELETE FROM streaks WHERE id=%s'
+            'DELETE FROM streak_history WHERE streakID=%s'
         )
         data = [streakID]
+        cursor.execute(query, data)
+        cnx.commit()
+
+        query = (
+            'DELETE FROM streaks WHERE id=%s'
+        )
         cursor.execute(query, data)
         cnx.commit()
         cursor.close()
@@ -269,3 +275,38 @@ def delete_streak():
         cursor.close()
         cnx.close()
         return {'message': 'User not logged in'}, 400
+
+@app.route('/api/markStreakDone', methods=['POST'])
+def markDone():
+    cnx, cursor, query = None, None, None
+    try:
+        token = request.cookies['token']
+        cnx = get_db_connection()
+        cursor = cnx.cursor()
+        query = (
+            'SELECT email, username, firstName, lastName FROM users WHERE token=%s'
+        )
+        data = [token]
+        cursor.execute(query, data)
+        try:
+            email, username, firstName, lastName = cursor.fetchone()
+        except Exception:
+            return {'message': 'Token invalid'}, 400
+    except KeyError:
+        return {'message': 'User not logged in'}, 401
+    # user logged in
+    streakID = request.json['id']
+    streakDate = date.today().isoformat()
+    streakDateID = sha256(str.encode(streakDate + str(streakID))).hexdigest()
+    query = (
+        'INSERT INTO streak_history VALUES (%s, %s, %s)'
+    )
+    data = (streakDateID, int(streakID), streakDate)
+    try:
+        cursor.execute(query, data)
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+    except IntegrityError:
+        return { 'message': 'already marked done today' }, 400
+    return { 'message': 'success', 'date': streakDate }, 200

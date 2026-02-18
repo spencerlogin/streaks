@@ -1,75 +1,71 @@
 import { useState, useEffect } from 'react'
-import '../styles/Dashboard.css'
+import Streak from './Streak'
+// import '../styles/Dashboard.css'
 
-function Dashboard({ userInfo }) {
+function Dashboard({ userInfo, theme }) {
     const [streaks, setStreaks] = useState([])
     const [update, setUpdate] = useState(false)
 
     useEffect(() => {
-        let ignore = false;
+        let ignore = false
         fetch('/api/streaks', { credentials: 'include', headers: { 'Accept': 'application/json' } })
             .then(res => res.json())
             .then(data => {
                 if (!ignore) {
                     setStreaks(data['streaks'].map(streak => {
                         return (
-                            <li key={streak['id']} className='streaks'>
-                                {streak['name']}: {streak['date']}
-                                <button onClick={() =>
-                                    fetch('/api/deleteStreak', { credentials: 'include', headers: { 'Content-Type': 'application/json' }, method: 'POST', body: JSON.stringify({ 'id': streak['id'] }) })
-                                        .then(res => {
-                                            if (!res.ok) {
-                                                alert(res.json()['message'])
-                                            } else {
-                                                setUpdate(!update)
-                                            }
-                                        })
-                                }
-                                className='delete-task'>
-                                    <p>x</p>
-                                </button>
-                            </li>
+                            <Streak 
+                                key={streak['id']}
+                                name={streak['name']} 
+                                dates={streak['dates'].map(streakDate => {
+                                    const parsedDate = new Date(streakDate)
+                                    return (parsedDate.getMonth() + 1) + '/' + (parsedDate.getDate() + 1) + '/' + (parsedDate.getYear() - 100)
+                                })} 
+                                id={streak['id']} 
+                                theme={theme}
+                                setUpdate={() => setUpdate(!update)}
+                                update={update}
+                            /> 
                         )
                     }))
                 }
             })
         return () => {
-            ignore = true;
+            ignore = true
         }
-    }, [update]);
+    }, [update])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
 
         const formData = new FormData(e.target)
-        await fetch('http://localhost:5050/api/createStreak', { method: 'POST', body: formData, credentials: 'include' })
+        await fetch('/api/createStreak', { method: 'POST', body: formData, credentials: 'include' })
             .then(res => {
                 if (!res.ok) {
                     alert('Error')
                 }
-                return res.json()
-            }).then(data => {
+            }).then(() => {
                 e.target.reset()
                 setUpdate(!update)
             })
     }
 
     return (
-        <>
-            <main>
-                <h1>{userInfo['firstName']}'s Streaks</h1>
-                <div className='streaks'>
-                    <ul>{streaks}</ul>
-                </div>
-                <div className='create-streak'>
-                    <form onSubmit={handleSubmit}>
+        <main className={theme}>
+            <h1>{userInfo['firstName']}'s Streaks</h1>
+            <div className='streaks'>
+                <ul>{streaks}</ul>
+            </div>
+            <div className='create-streak'>
+                <form onSubmit={handleSubmit}>
+                    <div className='form-input'>
                         <label htmlFor='streak-name'>Enter Streak Name</label>
-                        <input id='streak-name' type='text' name='streakName' placeholder='Streak name' />
-                        <button type='submit'>Create Streak</button>
-                    </form>
-                </div>
-            </main>
-        </>
+                        <input className={theme} id='streak-name' type='text' name='streakName' placeholder='Streak name' />
+                    </div>
+                    <button className={theme} type='submit'>Create Streak</button>
+                </form>
+            </div>
+        </main>
     )
 }
 
