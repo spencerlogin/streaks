@@ -38,7 +38,6 @@ function Dashboard({ userInfo, theme }) {
                         })
 
                         setStreaks(streakElements)
-                        // setDates(allDates)
 
                         // build counts per local date key and split into density sets
                         const counts = {}
