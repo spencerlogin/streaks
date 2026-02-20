@@ -6,7 +6,6 @@ import Calendar from './Calendar'
 function Dashboard({ userInfo, theme }) {
     const [streaks, setStreaks] = useState([])
     const [update, setUpdate] = useState(false)
-    // const [dates, setDates] = useState([])
     const [densitySets, setDensitySets] = useState({ low: new Set(), mid: new Set(), high: new Set() })
 
     useEffect(() => {
