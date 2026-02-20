@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
 import Streak from './Streak'
+import Calendar from './Calendar'
 // import '../styles/Dashboard.css'
 
 function Dashboard({ userInfo, theme }) {
     const [streaks, setStreaks] = useState([])
     const [update, setUpdate] = useState(false)
+    // const [dates, setDates] = useState([])
+    const [densitySets, setDensitySets] = useState({ low: new Set(), mid: new Set(), high: new Set() })
 
     useEffect(() => {
         let ignore = false
@@ -12,22 +15,53 @@ function Dashboard({ userInfo, theme }) {
             .then(res => res.json())
             .then(data => {
                 if (!ignore) {
-                    setStreaks(data['streaks'].map(streak => {
-                        return (
-                            <Streak 
-                                key={streak['id']}
-                                name={streak['name']} 
-                                dates={streak['dates'].map(streakDate => {
-                                    const parsedDate = new Date(streakDate)
-                                    return (parsedDate.getMonth() + 1) + '/' + (parsedDate.getDate() + 1) + '/' + (parsedDate.getYear() - 100)
-                                })} 
-                                id={streak['id']} 
-                                theme={theme}
-                                setUpdate={() => setUpdate(!update)}
-                                update={update}
-                            /> 
-                        )
-                    }))
+                    {
+                        const allDates = []
+                        const streakElements = data['streaks'].map(streak => {
+                            const displayDates = streak['dates'].map(streakDate => {
+                                const parsedDate = new Date(streakDate)
+                                parsedDate.setDate(parsedDate.getDate() + 1)
+                                allDates.push(parsedDate)
+                                return `${parsedDate.getMonth() + 1}/${parsedDate.getDate()}/${parsedDate.getFullYear()}`
+                            })
+
+                            return (
+                                <Streak
+                                    key={streak['id']}
+                                    name={streak['name']}
+                                    dates={displayDates}
+                                    id={streak['id']}
+                                    theme={theme}
+                                    setUpdate={() => setUpdate(!update)}
+                                    update={update}
+                                />
+                            )
+                        })
+
+                        setStreaks(streakElements)
+                        // setDates(allDates)
+
+                        // build counts per local date key and split into density sets
+                        const counts = {}
+                        allDates.forEach(d => {
+                            const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+                            counts[key] = (counts[key] || 0) + 1
+                        })
+
+                        const totalStreaks = data['streaks'].length || 1
+                        const low = new Set()
+                        const mid = new Set()
+                        const high = new Set()
+
+                        Object.entries(counts).forEach(([key, cnt]) => {
+                            const frac = cnt / totalStreaks
+                            if (frac < 1 / 2) low.add(key)
+                            else if (frac < 1) mid.add(key)
+                            else high.add(key)
+                        })
+
+                        setDensitySets({ low, mid, high })
+                    }
                 }
             })
         return () => {
@@ -56,6 +90,7 @@ function Dashboard({ userInfo, theme }) {
             <div className='streaks'>
                 <ul>{streaks}</ul>
             </div>
+            <Calendar densitySets={densitySets}/>
             <div className='create-streak'>
                 <form onSubmit={handleSubmit}>
                     <div className='form-input'>

@@ -6,10 +6,11 @@
     }
 }
 
-.streaks {
+.streak {
     display: flex;
     align-items: center;
     gap: 1em;
+    list-style-type: none;
 }
 
 .delete-task {

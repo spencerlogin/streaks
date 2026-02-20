@@ -163,8 +163,8 @@ def logout_user():
 @app.route('/api/streaks', methods=['GET', 'POST'])
 def get_streaks():
     # check that user is logged in
-    token = request.cookies['token']
-    if token:
+    try:
+        token = request.cookies['token']
         cnx = get_db_connection()
         cursor = cnx.cursor()
         query = (
@@ -197,7 +197,7 @@ def get_streaks():
         cursor.close()
         cnx.close()
         return {'streaks': streaks}, 200
-    else:
+    except KeyError:
         return {'message': 'User not logged in'}, 400
 
 @app.route('/api/createStreak', methods=['GET', 'POST'])
