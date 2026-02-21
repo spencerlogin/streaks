@@ -62,6 +62,8 @@
   --rdp-animation_timing: cubic-bezier(0.4, 0, 0.2, 1);
 
   --all-streaks-color: #00d354; 
+  --some-streaks-color: #ffd400;
+  --more-streaks-color: #ff8a00;
 }
 
 .rdp-root[dir="rtl"] {
@@ -466,19 +468,16 @@
 
 /* density-based modifier styles */
 .rdp-day.my-booked-low .rdp-day_button {
-  background-color: #ff8a00; /* orange */
-  /* color: #2b1200; */
+  background-color: var(--more-streaks-color); /* orange */
   border-radius: 50%;
 }
 
 .rdp-day.my-booked-mid .rdp-day_button {
-  background-color: #ffd400; /* yellow */
-  /* color: #222200; */
+  background-color: var(--some-streaks-color); /* yellow */
   border-radius: 50%;
 }
 
 .rdp-day.my-booked-high .rdp-day_button {
   background-color: var(--all-streaks-color); /* green */
-  /* color: black; */
   border-radius: 50%;
 }

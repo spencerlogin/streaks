@@ -4,9 +4,7 @@ import { DayPicker } from "react-day-picker"
 function Calendar({ densitySets, selected, setSelected }) {
 
     function keyForDate(date) {
-        let fmonth = date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : `${date.getMonth() + 1}`
-        let fdate = date.getDate() < 10 ? `0${date.getDate()}` : `${date.getDate()}`
-        return `${date.getFullYear()}-${fmonth}-${fdate}`
+        return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
     }
 
     const modifiers = {
