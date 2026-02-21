@@ -58,6 +58,7 @@ services:
       - MYSQL_PASSWORD=twiKexU_5JXL5tM
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./db/cnf:/etc/mysql/conf.d
     ports:
       - 3306:3306
       - 33060:33060
