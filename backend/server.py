@@ -313,3 +313,42 @@ def markDone():
     except IntegrityError:
         return { 'message': 'already marked done today' }, 400
     return { 'message': 'success', 'date': streakDate }, 200
+
+@app.route('/api/markStreaksDone', methods=['POST'])
+def markMultipleDone():
+    cnx, cursor, query = None, None, None
+    try:
+        token = request.cookies['token']
+        cnx = get_db_connection()
+        cursor = cnx.cursor()
+        query = (
+            'SELECT email, username, firstName, lastName FROM users WHERE token=%s'
+        )
+        data = [token]
+        cursor.execute(query, data)
+        try:
+            email, username, firstName, lastName = cursor.fetchone()
+        except Exception:
+            return {'message': 'Token invalid'}, 400
+    except KeyError:
+        return {'message': 'User not logged in'}, 401
+    # user logged in
+    streakIDs = request.json['ids']
+    streakDates = request.json['dates']
+    query = (
+        'INSERT INTO streak_history VALUES (%s, %s, %s)'
+    )
+    errors = []
+    for streakID in streakIDs:
+        for streakDate in streakDates:
+            data = (sha256(str.encode(streakDate + str(streakID))).hexdigest(), int(streakID), streakDate)
+            try:
+                cursor.execute(query, data)
+                cnx.commit()
+            except IntegrityError:
+                errors.append({streakID: streakDate})
+    cursor.close()
+    cnx.close()
+    if errors:
+        return { 'message': '1 or more streaks were already done for 1 or more of the selected dates', 'failed': errors }, 400
+    return { 'message': 'success' }, 200

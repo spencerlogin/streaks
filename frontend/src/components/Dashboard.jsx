@@ -7,6 +7,8 @@ function Dashboard({ userInfo, theme }) {
     const [streaks, setStreaks] = useState([])
     const [update, setUpdate] = useState(false)
     const [densitySets, setDensitySets] = useState({ low: new Set(), mid: new Set(), high: new Set() })
+    const [dates, setDates] = useState()
+    const [selectedIDs, setSelectedIDs] = useState(new Set())
 
     useEffect(() => {
         let ignore = false
@@ -24,17 +26,12 @@ function Dashboard({ userInfo, theme }) {
                                 return `${parsedDate.getMonth() + 1}/${parsedDate.getDate()}/${parsedDate.getFullYear()}`
                             })
 
-                            return (
-                                <Streak
-                                    key={streak['id']}
-                                    name={streak['name']}
-                                    dates={displayDates}
-                                    id={streak['id']}
-                                    theme={theme}
-                                    setUpdate={() => setUpdate(!update)}
-                                    update={update}
-                                />
-                            )
+                            return ({
+                                name: streak['name'],
+                                dates: displayDates,
+                                id: streak['id'],
+                                theme: theme,
+                            })
                         })
 
                         setStreaks(streakElements)
@@ -82,13 +79,59 @@ function Dashboard({ userInfo, theme }) {
             })
     }
 
+    function handleUpdate() {
+        let curDate = new Date(dates.from)
+        let toDate = new Date(dates.to)
+        let fmonth = curDate.getMonth() + 1 < 10 ? `0${curDate.getMonth() + 1}` : `${curDate.getMonth() + 1}`
+        let fdate = curDate.getDate() < 10 ? `0${curDate.getDate()}` : `${curDate.getDate()}`
+        let selectedDates = [`${curDate.getFullYear()}-${fmonth}-${fdate}`]
+        while (curDate.getDate() != toDate.getDate()) {
+            curDate.setDate(curDate.getDate() + 1)
+            fmonth = curDate.getMonth() + 1 < 10 ? `0${curDate.getMonth() + 1}` : `${curDate.getMonth() + 1}`
+            fdate = curDate.getDate() < 10 ? `0${curDate.getDate()}` : `${curDate.getDate()}`
+            selectedDates.push(`${curDate.getFullYear()}-${fmonth}-${fdate}`)
+        }
+        fetch('/api/markStreaksDone', { 
+            method: 'POST',
+            credentials: 'include', 
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({
+                'ids': Array.from(selectedIDs),
+                'dates': selectedDates 
+            })
+        })
+    }
+
     return (
         <main className={theme}>
             <h1>{userInfo['firstName']}'s Streaks</h1>
             <div className='streaks'>
-                <ul>{streaks}</ul>
+                {streaks.map(streak => 
+                    <Streak
+                        key={streak.id}
+                        name={streak.name}
+                        dates={streak.dates}
+                        id={streak.id}
+                        theme={streak.theme}
+                        setUpdate={setUpdate}
+                        selectedIDs={selectedIDs}
+                        setSelectedIDs={setSelectedIDs}
+                    />
+                )}
             </div>
-            <Calendar densitySets={densitySets}/>
+            <Calendar
+                densitySets={densitySets}
+                selected={dates}
+                setSelected={setDates}
+            />
+            <ul>
+                {Array.from(selectedIDs).map(id => <li key={id}>{id}</li>)}
+            </ul>
+            <div className='update-streaks'>
+                <button onClick={handleUpdate}>
+                    Update Streaks
+                </button>
+            </div>
             <div className='create-streak'>
                 <form onSubmit={handleSubmit}>
                     <div className='form-input'>

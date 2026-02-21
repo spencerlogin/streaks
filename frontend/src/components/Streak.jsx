@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
+// import '../styles/Streak.css'
 
-function Streak({ name, dates, id, theme, setUpdate }) {
+function Streak({ name, dates, id, theme, setUpdate, selectedIDs, setSelectedIDs }) {
     function fmt(d) {
         return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`
     }
@@ -32,8 +33,14 @@ function Streak({ name, dates, id, theme, setUpdate }) {
     }, [dates])
 
     return (
-        <li className='streak'>
-            {name}: Current streak — {currentStreak} day{currentStreak === 1 ? '' : 's'}
+        <div className='streak'>
+            <input type='checkbox' onChange={() => {
+                const newSet = new Set(selectedIDs)
+                if (!newSet.delete(id))
+                    newSet.add(id)
+                setSelectedIDs(newSet)
+            }}/>
+            {name}: {currentStreak} day{currentStreak > 1 ? 's' : ''}
             {!hidden && <button onClick={() =>
                 fetch('/api/markStreakDone', { credentials: 'include', headers: { 'Content-Type': 'application/json' }, method: 'POST', body: JSON.stringify({ 'id': id }) })
                     .then(res => {
@@ -56,7 +63,7 @@ function Streak({ name, dates, id, theme, setUpdate }) {
                 className={'delete-task ' + theme}>
                 ✗ 
             </button>
-        </li>
+        </div>
     )
 }
 
