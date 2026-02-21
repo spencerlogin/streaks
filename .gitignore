@@ -29,3 +29,4 @@ backend/.venv/
 
 # Secret
 db/password.txt
+.env

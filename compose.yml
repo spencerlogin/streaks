@@ -55,7 +55,7 @@ services:
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
       - MYSQL_USER=spencer
       - MYSQL_DATABASE=streaks
-      - MYSQL_PASSWORD=password
+      - MYSQL_PASSWORD=twiKexU_5JXL5tM
     volumes:
       - mysql-data:/var/lib/mysql
     ports:
