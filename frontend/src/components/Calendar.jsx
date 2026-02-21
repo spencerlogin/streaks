@@ -1,16 +1,12 @@
 import '../styles/Calendar.css'
 import { DayPicker } from "react-day-picker"
 
-function Calendar({ densitySets, selected, setSelected }) {
-
-    function keyForDate(date) {
-        return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
-    }
+function Calendar({ densitySets, selected, setSelected, formatDate }) {
 
     const modifiers = {
-        low: (date) => densitySets && densitySets.low && densitySets.low.has(keyForDate(date)),
-        mid: (date) => densitySets && densitySets.mid && densitySets.mid.has(keyForDate(date)),
-        high: (date) => densitySets && densitySets.high && densitySets.high.has(keyForDate(date)),
+        low: (date) => densitySets && densitySets.low && densitySets.low.has(formatDate(date)),
+        mid: (date) => densitySets && densitySets.mid && densitySets.mid.has(formatDate(date)),
+        high: (date) => densitySets && densitySets.high && densitySets.high.has(formatDate(date)),
     }
 
     return (
@@ -20,10 +16,6 @@ function Calendar({ densitySets, selected, setSelected }) {
             modifiersClassNames={{ low: 'my-booked-low', mid: 'my-booked-mid', high: 'my-booked-high' }}
             selected={selected}
             onSelect={setSelected}
-            footer={ 
-                selected ? `Add days to selected streaks: \n${selected.from.toLocaleDateString()}-${selected.to.toLocaleDateString()}` : 
-                "Pick a day."
-            }
         />
     )
 }

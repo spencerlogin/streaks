@@ -14,7 +14,6 @@ config = dotenv_values(".env")
 
 app = Flask(__name__)
 
-# TODO: put the user and password in a .env file
 def get_db_connection():
     return  mysql.connector.connect(user='root', password=config['SQL_ROOT_PW'], host='mysql', database='streaks')
 
@@ -352,3 +351,88 @@ def markMultipleDone():
     if errors:
         return { 'message': '1 or more streaks were already done for 1 or more of the selected dates', 'failed': errors }, 400
     return { 'message': 'success' }, 200
+
+@app.route('/api/markStreaksNotDone', methods=['POST'])
+def markMultipleNotDone():
+    cnx, cursor, query = None, None, None
+    try:
+        token = request.cookies['token']
+        cnx = get_db_connection()
+        cursor = cnx.cursor()
+        query = (
+            'SELECT email, username, firstName, lastName FROM users WHERE token=%s'
+        )
+        data = [token]
+        cursor.execute(query, data)
+        try:
+            email, username, firstName, lastName = cursor.fetchone()
+        except Exception:
+            return {'message': 'Token invalid'}, 400
+    except KeyError:
+        return {'message': 'User not logged in'}, 401
+    # user logged in
+    streakIDs = request.json['ids']
+    streakDates = request.json['dates']
+    query = (
+        'DELETE FROM streak_history WHERE streakID=%s AND date=%s'
+    )
+    errors = []
+    for streakID in streakIDs:
+        for streakDate in streakDates:
+            data = (streakID, streakDate)
+            try:
+                cursor.execute(query, data)
+                cnx.commit()
+            except IntegrityError:
+                errors.append({streakID: streakDate})
+    cursor.close()
+    cnx.close()
+    if errors:
+        return { 'message': '1 or more streaks were already done for 1 or more of the selected dates', 'failed': errors }, 400
+    return { 'message': 'success' }, 200
+
+@app.route('/api/renameStreak', methods=['POST'])
+def renameStreak():
+    cnx, cursor, query = None, None, None
+    try:
+        token = request.cookies['token']
+        cnx = get_db_connection()
+        cursor = cnx.cursor()
+        query = (
+            'SELECT email, username, firstName, lastName FROM users WHERE token=%s'
+        )
+        data = [token]
+        cursor.execute(query, data)
+        try:
+            email, username, firstName, lastName = cursor.fetchone()
+        except Exception:
+            return {'message': 'Token invalid'}, 400
+    except KeyError:
+        return {'message': 'User not logged in'}, 401
+    # user logged in 
+    streakID = request.json['id']
+    streakNewName = request.json['newName']
+
+    # change streak name 
+    updateQueryStreaks = 'UPDATE streaks SET name=%s WHERE id=%s'
+    data = (streakNewName, streakID)
+    cursor.execute(updateQueryStreaks, data)
+
+    # get dates associated with streak
+    selectQuery = 'SELECT date FROM streak_history WHERE streakID=%s'
+    data = (streakID,)
+    cursor.execute(selectQuery, data)
+
+    # change streak id in streak_history for all dates (id is sha256 of date + streakID)
+    updateQueryStreakHistory = 'UPDATE streak_history SET id=%s WHERE streakID=%s'
+    try:
+        dates = cursor.fetchall()
+        for date in dates:
+            data = (sha256(str.encode(str(date) + str(streakID))).hexdigest(), int(streakID))
+            cursor.execute(updateQueryStreakHistory, data)
+            cnx.commit()
+        cursor.close()
+        cnx.close()
+        return {'message': 'success'}, 200
+    except Exception:
+        return {'message': 'error renaming streak'}, 400
