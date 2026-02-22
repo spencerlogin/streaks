@@ -134,7 +134,7 @@ def login_user():
             cursor.close()
             cnx.close()
             return ({'username': username, 'email': email, 'firstname': firstname, 'lastname': lastname}, 200, {'Set-Cookie': f'token={token}; samesite=strict; max-age=604800; httponly'})
-        except verifymismatcherror:
+        except VerifyMismatchError:
             cursor.close()
             cnx.close()
             return {'message': 'incorrect username/email or password'}, 401
