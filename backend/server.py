@@ -105,7 +105,7 @@ def login_user():
     cnx = get_db_connection()
     cursor = cnx.cursor()
     query = (
-        'select username, email, firstname, lastname, password from users where username=%s or email=%s'
+        'SELECT username, email, firstname, lastname, password FROM users WHERE username=%s OR email=%s'
     )
     data = (username, username)
     cursor.execute(query, data)
@@ -126,7 +126,7 @@ def login_user():
             token = sha256(str(uuid4()).encode('utf-8')).hexdigest()
             # add token to db
             query = (
-                'update users set token=%s where username=%s or email=%s'
+                'UPDATE users SET token=%s WHERE username=%s OR email=%s'
             )
             data = (token, username, username)
             cursor.execute(query, data)
@@ -223,8 +223,7 @@ def create_streak():
         
         # add streak to db
         query = (
-            'INSERT INTO streaks (name, userID)'
-            'VALUES (%s, %s)'
+            'INSERT INTO streaks VALUES (%s, %s)'
         )
         data = (streakName, userID)
         cursor.execute(query, data)
@@ -261,7 +260,7 @@ def delete_streak():
         query = (
             'DELETE FROM streak_history WHERE streakID=%s'
         )
-        data = [streakID]
+        data = (streakID,)
         cursor.execute(query, data)
         cnx.commit()
 
@@ -299,11 +298,10 @@ def markDone():
     # user logged in
     streakID = request.json['id']
     streakDate = date.today().isoformat()
-    streakDateID = sha256(str.encode(streakDate + str(streakID))).hexdigest()
     query = (
-        'INSERT INTO streak_history VALUES (%s, %s, %s)'
+        'INSERT INTO streak_history VALUES (%s, %s)'
     )
-    data = (streakDateID, int(streakID), streakDate)
+    data = (int(streakID), streakDate)
     try:
         cursor.execute(query, data)
         cnx.commit()
@@ -335,12 +333,12 @@ def markMultipleDone():
     streakIDs = request.json['ids']
     streakDates = request.json['dates']
     query = (
-        'INSERT INTO streak_history VALUES (%s, %s, %s)'
+        'INSERT INTO streak_history VALUES (%s, %s)'
     )
     errors = []
     for streakID in streakIDs:
         for streakDate in streakDates:
-            data = (sha256(str.encode(streakDate + str(streakID))).hexdigest(), int(streakID), streakDate)
+            data = (int(streakID), streakDate)
             try:
                 cursor.execute(query, data)
                 cnx.commit()
@@ -417,22 +415,8 @@ def renameStreak():
     updateQueryStreaks = 'UPDATE streaks SET name=%s WHERE id=%s'
     data = (streakNewName, streakID)
     cursor.execute(updateQueryStreaks, data)
+    cnx.commit()
 
-    # get dates associated with streak
-    selectQuery = 'SELECT date FROM streak_history WHERE streakID=%s'
-    data = (streakID,)
-    cursor.execute(selectQuery, data)
-
-    # change streak id in streak_history for all dates (id is sha256 of date + streakID)
-    updateQueryStreakHistory = 'UPDATE streak_history SET id=%s WHERE streakID=%s'
-    try:
-        dates = cursor.fetchall()
-        for date in dates:
-            data = (sha256(str.encode(str(date) + str(streakID))).hexdigest(), int(streakID))
-            cursor.execute(updateQueryStreakHistory, data)
-            cnx.commit()
-        cursor.close()
-        cnx.close()
-        return {'message': 'success'}, 200
-    except Exception:
-        return {'message': 'error renaming streak'}, 400
+    cursor.close()
+    cnx.close()
+    return {'message': 'success'}, 200
