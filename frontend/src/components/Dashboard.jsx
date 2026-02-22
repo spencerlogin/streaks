@@ -5,6 +5,8 @@ import Calendar from './Calendar'
 
 function Dashboard({ userInfo, theme }) {
     const [streaks, setStreaks] = useState([])
+    const [filteredStreaks, setFilteredStreaks] = useState(streaks)
+    const [filter, setFilter] = useState('')
     const [update, setUpdate] = useState(false)
     const [densitySets, setDensitySets] = useState({ low: new Set(), mid: new Set(), high: new Set() })
     const [dates, setDates] = useState()
@@ -28,12 +30,10 @@ function Dashboard({ userInfo, theme }) {
             .then(res => res.json())
             .then(data => {
                 if (!ignore) {
-                    const allDates = []
                     const streakElements = data['streaks'].map(streak => {
                         const displayDates = streak['dates'].map(streakDate => {
                             const parsedDate = new Date(streakDate)
                             parsedDate.setDate(parsedDate.getDate() + 1)
-                            allDates.push(parsedDate)
                             return formatDateForDisplay(parsedDate)
                         })
 
@@ -46,27 +46,6 @@ function Dashboard({ userInfo, theme }) {
                     })
 
                     setStreaks(streakElements)
-
-                    // build counts per local date key and split into density sets
-                    const counts = {}
-                    allDates.forEach(d => {
-                        const key = formatDateForDB(d)
-                        counts[key] = (counts[key] || 0) + 1
-                    })
-
-                    const totalStreaks = data['streaks'].length || 1
-                    const low = new Set()
-                    const mid = new Set()
-                    const high = new Set()
-
-                    Object.entries(counts).forEach(([key, cnt]) => {
-                        const frac = cnt / totalStreaks
-                        if (frac < 1 / 2) low.add(key)
-                        else if (frac < 1) mid.add(key)
-                        else high.add(key)
-                    })
-
-                    setDensitySets({ low, mid, high })
                 }
             })
         return () => {
@@ -74,11 +53,41 @@ function Dashboard({ userInfo, theme }) {
         }
     }, [update])
 
+    useEffect(() => {
+        setFilteredStreaks(streaks.filter(streak => streak.name.toLowerCase().includes(filter)))
+    }, [streaks, filter])
+
+    useEffect(() => {
+        const counts = {}
+
+        filteredStreaks.forEach(streak => {
+            streak.dates.forEach(dateString => {
+                const parsedDate = new Date(dateString)
+                const key = formatDateForDB(parsedDate)
+                counts[key] = (counts[key] || 0) + 1
+            })
+        })
+
+        const totalStreaks = filteredStreaks.length || 1
+        const low = new Set()
+        const mid = new Set()
+        const high = new Set()
+
+        Object.entries(counts).forEach(([key, cnt]) => {
+            const frac = cnt / totalStreaks
+            if (frac < 1 / 2) low.add(key)
+            else if (frac < 1) mid.add(key)
+            else high.add(key)
+        })
+
+        setDensitySets({ low, mid, high })
+    }, [filteredStreaks])
+
     // create new streak with name specific in formData
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        const formData = new FormData(e.target)
+        const formData = new FormData((e) => setStreakName(e.target.value))
         await fetch('/api/createStreak', { method: 'POST', body: formData, credentials: 'include' })
             .then(res => {
                 if (!res.ok) {
@@ -91,7 +100,7 @@ function Dashboard({ userInfo, theme }) {
     }
     // add date range to 1 or more streaks
     function handleAddDates() {
-        // calculate specific dates from "from date" and "to date"
+        // calculate specific dates from 'from date' and 'to date'
         let curDate = new Date(dates.from)
         let toDate = new Date(dates.to)
         let selectedDates = [formatDateForDB(curDate)]
@@ -134,20 +143,44 @@ function Dashboard({ userInfo, theme }) {
         <main className={theme}>
             <h1>{userInfo['firstName']}'s Streaks</h1>
             <div className='streaks'>
+                <input type='text' placeholder='Filter streaks' onChange={(e) => setFilter(e.target.value.toLowerCase())}/>
                 {/* render streaks from data kept in state */}
-                {streaks.map(streak => 
-                    <Streak
-                        key={streak.id}
-                        name={streak.name}
-                        dates={streak.dates}
-                        formatDate={formatDateForDisplay}
-                        id={streak.id}
-                        theme={streak.theme}
-                        setUpdate={setUpdate}
-                        selectedIDs={selectedIDs}
-                        setSelectedIDs={setSelectedIDs}
-                    />
-                )}
+                <h2>TO DO:</h2>
+                {filteredStreaks.map(streak => {
+                    if (!streak.dates.includes(formatDateForDisplay(new Date()))) {
+                        return (
+                            <Streak
+                                key={streak.id}
+                                name={streak.name}
+                                dates={streak.dates}
+                                formatDate={formatDateForDisplay}
+                                id={streak.id}
+                                theme={streak.theme}
+                                setUpdate={setUpdate}
+                                selectedIDs={selectedIDs}
+                                setSelectedIDs={setSelectedIDs}
+                            />
+                        )
+                    }
+                })}
+                <h2>DONE:</h2>
+                {filteredStreaks.map(streak => {
+                    if (streak.dates.includes(formatDateForDisplay(new Date()))) {
+                        return (
+                            <Streak
+                                key={streak.id}
+                                name={streak.name}
+                                dates={streak.dates}
+                                formatDate={formatDateForDisplay}
+                                id={streak.id}
+                                theme={streak.theme}
+                                setUpdate={setUpdate}
+                                selectedIDs={selectedIDs}
+                                setSelectedIDs={setSelectedIDs}
+                            />
+                        )
+                    }
+                })}
             </div>
             <Calendar
                 densitySets={densitySets}
