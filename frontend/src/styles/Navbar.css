@@ -1,11 +1,11 @@
 #logout {
-    border: none;
-    background: none;
-    padding: none;
-    margin: none;
-    font-weight: 500;
-    color: #646cff;
-    text-decoration: inherit;
+  border: none;
+  background: none;
+  padding: none;
+  margin: none;
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
 }
 #logout:hover {
   color: #8388eb;
