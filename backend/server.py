@@ -8,17 +8,38 @@ from argon2.profiles import RFC_9106_HIGH_MEMORY
 from hashlib import sha256
 from uuid import uuid4
 from datetime import date
-from dotenv import dotenv_values
+import os
 
-config = dotenv_values(".env")
+DB_HOST = os.getenv("DB_HOST", "mysql")
+DB_PORT = int(os.getenv("DB_PORT", "3306"))
+DB_USER = os.getenv("DB_USER", "root")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+DB_PASSWORD_FILE = os.getenv("DB_PASSWORD_FILE")
+DB_NAME = os.getenv("DB_NAME", "streaks")
+
+if DB_PASSWORD_FILE:
+    with open(DB_PASSWORD_FILE, "r", encoding="utf-8") as password_file:
+        DB_PASSWORD = password_file.read().strip()
+
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
+COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "Lax")
 
 app = Flask(__name__)
 
 
 def get_db_connection():
     return mysql.connector.connect(
-        user="root", password=config["SQL_ROOT_PW"], host="mysql", database="streaks"
+        user=DB_USER,
+        password=DB_PASSWORD,
+        host=DB_HOST,
+        port=DB_PORT,
+        database=DB_NAME,
     )
+
+
+def build_session_cookie(token):
+    secure = "Secure; " if COOKIE_SECURE else ""
+    return f"token={token}; Path=/; SameSite={COOKIE_SAMESITE}; {secure}Max-Age=604800; HttpOnly"
 
 
 CORS(
@@ -107,7 +128,7 @@ def signup_user():
         return (
             {"message": "Success!"},
             200,
-            {"Set-Cookie": f"token={token}; SameSite=Strict; Max-Age=604800; HttpOnly"},
+            {"Set-Cookie": build_session_cookie(token)},
         )
 
 
@@ -124,7 +145,7 @@ def login_user():
     cursor.execute(query, data)
     try:
         username, email, firstname, lastname, pwhash = cursor.fetchone()
-    except exception:
+    except Exception:
         cursor.close()
         cnx.close()
         return {"message": "invalid username or password"}, 400
@@ -152,9 +173,7 @@ def login_user():
                     "lastname": lastname,
                 },
                 200,
-                {
-                    "Set-Cookie": f"token={token}; samesite=strict; max-age=604800; httponly"
-                },
+                {"Set-Cookie": build_session_cookie(token)},
             )
         except VerifyMismatchError:
             cursor.close()
