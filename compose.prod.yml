@@ -3,12 +3,22 @@ services:
     build:
       context: frontend
       dockerfile: Dockerfile.prod
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
     depends_on:
       backend:
         condition: service_started
     ports:
       - "80:80"
+      - "443:443"
     restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
 
   backend:
     build:
