@@ -1,10 +1,9 @@
 // import '../styles/Splash.css'
 
-function Splash({ theme }) {
+function Splash() {
   return (
-    <main className={theme}>
-      <h1 id="welcome">Welcome to Streaks!</h1>
-      <div id="credits">streaks by Spencer Login</div>
+    <main className="flex justify-center">
+      <h1 className="text-7xl">Welcome to Streaks!</h1>
     </main>
   );
 }

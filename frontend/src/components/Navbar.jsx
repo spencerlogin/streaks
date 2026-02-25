@@ -1,41 +1,31 @@
 import { NavLink } from "react-router";
-// import '../styles/Navbar.css'
 
-function Navbar({ action, loggedIn, logout, theme }) {
+function Navbar({ action, loggedIn, logout }) {
   return (
-    <div className={"navbar " + theme}>
-      <div className="navgroup">
-        <NavLink to="/">
-          <h1>Streaks</h1>
-        </NavLink>
-      </div>
-      <div className="navgroup">
-        <label className="switch">
-          <input
-            type="checkbox"
-            onClick={() => {
-              if (theme === "dark") {
-                action("light");
-              } else {
-                action("dark");
-              }
-            }}
-          />
-          <span className="slider round"></span>
-        </label>
+    <div className={"flex justify-between items-center my-4"}>
+      <NavLink to="/">
+        <h1 className="text-5xl">Streaks</h1>
+      </NavLink>
+      <div className="flex gap-x-5 items-center">
+        <div class="checkbox-wrapper-54">
+          <label class="switch">
+            <input type="checkbox"/>
+            <span class="slider"></span>
+          </label>
+        </div>
 
         {loggedIn && (
-          <button id="logout" onClick={logout}>
+          <button className="font-serif text-2xl" id="logout" onClick={logout}>
             <h2>Logout</h2>
           </button>
         )}
         {!loggedIn && (
           <>
             <NavLink to="/login">
-              <h2>Login</h2>
+              <h2 className="font-serif text-2xl">Login</h2>
             </NavLink>
             <NavLink to="/signup">
-              <h2>Signup</h2>
+              <h2 className="font-serif text-2xl">Signup</h2>
             </NavLink>
           </>
         )}
