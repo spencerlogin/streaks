@@ -80,7 +80,7 @@ function Streak({
                 body: JSON.stringify({ id: id }),
               }).then((res) => {
                 if (res.ok) {
-                  setUpdate();
+                  setUpdate(u => !u);
                 }
                 setHidden(true);
               })
@@ -101,7 +101,7 @@ function Streak({
               if (!res.ok) {
                 alert(res.json()["message"]);
               } else {
-                setUpdate();
+                setUpdate(u => !u);
               }
             })
           }
