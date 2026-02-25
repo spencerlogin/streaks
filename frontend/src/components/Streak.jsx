@@ -121,13 +121,21 @@ function Streak({
                 },
                 body: JSON.stringify({ id: id, newName: streakName }),
               }).then((res) => {
-                const data = res.json();
-                if (!res.ok) {
-                  alert(data["message"] ?? "Failed to rename streak");
-                } else {
-                  setEditable(false);
-                  setUpdate();
-                }
+                res.json().then((data) => {
+                  if (!res.ok) {
+                    alert(data["message"] ?? "Failed to rename streak");
+                  } else {
+                    setEditable(false);
+                    setUpdate();
+                  }
+                }).catch(() => {
+                  if (!res.ok) {
+                    alert("Failed to rename streak");
+                  } else {
+                    setEditable(false);
+                    setUpdate();
+                  }
+                });
               });
             }}
             className=" border rounded-sm pl-1 pr-1"
