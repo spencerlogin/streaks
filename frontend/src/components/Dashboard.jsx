@@ -3,7 +3,7 @@ import Streak from "./Streak";
 import Calendar from "./Calendar";
 // import '../styles/Dashboard.css'
 
-function Dashboard({ userInfo, theme }) {
+function Dashboard({ userInfo }) {
   const [streaks, setStreaks] = useState([]);
   const [filteredStreaks, setFilteredStreaks] = useState(streaks);
   const [filter, setFilter] = useState("");
@@ -49,7 +49,6 @@ function Dashboard({ userInfo, theme }) {
               name: streak["name"],
               dates: displayDates,
               id: streak["id"],
-              theme: theme,
             };
           });
 
@@ -161,84 +160,89 @@ function Dashboard({ userInfo, theme }) {
   }
 
   return (
-    <main className={theme}>
-      <h1>{userInfo["firstName"]}'s Streaks</h1>
-      <div className="streaks">
-        <input
-          type="text"
-          placeholder="Filter streaks"
-          onChange={(e) => setFilter(e.target.value.toLowerCase())}
-        />
-        {/* render streaks from data kept in state */}
-        <h2>TO DO:</h2>
-        {filteredStreaks.map((streak) => {
-          if (!streak.dates.includes(formatDateForDisplay(new Date()))) {
-            return (
-              <Streak
-                key={streak.id}
-                name={streak.name}
-                dates={streak.dates}
-                formatDate={formatDateForDisplay}
-                id={streak.id}
-                theme={streak.theme}
-                setUpdate={setUpdate}
-                selectedIDs={selectedIDs}
-                setSelectedIDs={setSelectedIDs}
-              />
-            );
-          }
-        })}
-        <h2>DONE:</h2>
-        {filteredStreaks.map((streak) => {
-          if (streak.dates.includes(formatDateForDisplay(new Date()))) {
-            return (
-              <Streak
-                key={streak.id}
-                name={streak.name}
-                dates={streak.dates}
-                formatDate={formatDateForDisplay}
-                id={streak.id}
-                theme={streak.theme}
-                setUpdate={setUpdate}
-                selectedIDs={selectedIDs}
-                setSelectedIDs={setSelectedIDs}
-              />
-            );
-          }
-        })}
-      </div>
-      <Calendar
-        densitySets={densitySets}
-        selected={dates}
-        setSelected={setDates}
-        formatDate={formatDateForDB}
-      />
-      {dates && (
-        <>
-          <div className="add-streaks-dates">
-            <button onClick={handleAddDates}>Add Dates</button>
+    <main>
+      <div className="flex justify-between mr-25 ml-25">
+        <div className="">
+          <h1 className="text-3xl">{userInfo["firstName"]}'s Streaks</h1>
+          <input
+            type="text"
+            placeholder="Filter streaks"
+            onChange={(e) => setFilter(e.target.value.toLowerCase())}
+            className="border rounded-sm border-stone-400"
+          />
+          {/* render streaks from data kept in state */}
+          <div>
+            <h2 className="text-2xl mt-5">TO DO:</h2>
+            {filteredStreaks.map((streak) => {
+              if (!streak.dates.includes(formatDateForDisplay(new Date()))) {
+                return (
+                  <Streak
+                    key={streak.id}
+                    name={streak.name}
+                    dates={streak.dates}
+                    formatDate={formatDateForDisplay}
+                    id={streak.id}
+                    setUpdate={setUpdate}
+                    selectedIDs={selectedIDs}
+                    setSelectedIDs={setSelectedIDs}
+                  />
+                );
+              }
+            })}
+            <h2 className="text-2xl mt-5">DONE:</h2>
+            {filteredStreaks.map((streak) => {
+              if (streak.dates.includes(formatDateForDisplay(new Date()))) {
+                return (
+                  <Streak
+                    key={streak.id}
+                    name={streak.name}
+                    dates={streak.dates}
+                    formatDate={formatDateForDisplay}
+                    id={streak.id}
+                    setUpdate={setUpdate}
+                    selectedIDs={selectedIDs}
+                    setSelectedIDs={setSelectedIDs}
+                  />
+                );
+              }
+            })}
           </div>
-          <div className="remove-streaks-dates">
-            <button onClick={handleRemoveDates}>Remove Dates</button>
+        </div>
+        <div className="">
+          <Calendar
+            densitySets={densitySets}
+            selected={dates}
+            setSelected={setDates}
+            formatDate={formatDateForDB}
+          />
+          {dates && (
+            <>
+              <div className="add-streaks-dates">
+                <button onClick={handleAddDates}>Add Dates</button>
+              </div>
+              <div className="remove-streaks-dates">
+                <button onClick={handleRemoveDates}>Remove Dates</button>
+              </div>
+            </>
+          )}
+          <div className="create-streak">
+            <form onSubmit={handleSubmit}>
+              <div className="flex gap-x-2">
+                <label htmlFor="streak-name">Enter Streak Name</label>
+                <input
+                  className={"border rounded-sm border-stone-400"}
+                  id="streak-name"
+                  type="text"
+                  name="streakName"
+                  placeholder="Streak name"
+                />
+              </div>
+              <button className={"border rounded-sm pl-1 pr-1"} type="submit">
+                Create Streak
+              </button>
+            </form>
           </div>
-        </>
-      )}
-      <div className="create-streak">
-        <form onSubmit={handleSubmit}>
-          <div className="form-input">
-            <label htmlFor="streak-name">Enter Streak Name</label>
-            <input
-              className={theme}
-              id="streak-name"
-              type="text"
-              name="streakName"
-              placeholder="Streak name"
-            />
-          </div>
-          <button className={theme} type="submit">
-            Create Streak
-          </button>
-        </form>
+        </div>
       </div>
     </main>
   );

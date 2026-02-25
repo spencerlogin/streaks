@@ -1,14 +1,21 @@
-function Signup({ action, theme }) {
+function Signup({ action }) {
   return (
-    <form className={"login-form " + theme} onSubmit={action}>
+    <form className="flex flex-col" onSubmit={action}>
       <label htmlFor="email-field">Email</label>
-      <input id="email-field" type="text" placeholder="Email" name="email" />
+      <input
+        id="email-field"
+        type="text"
+        placeholder="Email"
+        name="email"
+        className="border rounded-sm border-stone-400"
+      />
       <label htmlFor="username-field">Username</label>
       <input
         id="username-field"
         type="text"
         placeholder="Username"
         name="username"
+        className="border rounded-sm border-stone-400"
       />
       <label htmlFor="firstname-field">First Name</label>
       <input
@@ -16,6 +23,7 @@ function Signup({ action, theme }) {
         type="text"
         placeholder="First name"
         name="firstName"
+        className="border rounded-sm border-stone-400"
       />
       <label htmlFor="lastname-field">Last Name</label>
       <input
@@ -23,6 +31,7 @@ function Signup({ action, theme }) {
         type="text"
         placeholder="Last name"
         name="lastName"
+        className="border rounded-sm border-stone-400"
       />
       <label htmlFor="password-field">Password</label>
       <input
@@ -30,6 +39,7 @@ function Signup({ action, theme }) {
         type="password"
         placeholder="Password"
         name="password"
+        className="border rounded-sm border-stone-400"
       />
       <label htmlFor="confirm-password-field">Confirm Password</label>
       <input
@@ -37,8 +47,11 @@ function Signup({ action, theme }) {
         type="password"
         placeholder="Password"
         name="password-confirm"
+        className="border rounded-sm border-stone-400"
       />
-      <button type="submit">Sign Up</button>
+      <button type="submit" className=" border rounded-sm pl-1 pr-1">
+        Sign Up
+      </button>
     </form>
   );
 }

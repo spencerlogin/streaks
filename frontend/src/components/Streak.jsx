@@ -6,7 +6,6 @@ function Streak({
   dates,
   formatDate,
   id,
-  theme,
   setUpdate,
   selectedIDs,
   setSelectedIDs,
@@ -44,98 +43,109 @@ function Streak({
   }, [dates]);
 
   return (
-    <div className="streak">
-      <input
-        type="checkbox"
-        onChange={() => {
-          const newSet = new Set(selectedIDs);
-          if (!newSet.delete(id)) newSet.add(id);
-          setSelectedIDs(newSet);
-        }}
-      />
-      {editable ? (
-        <>
-          <input
-            value={streakName}
-            onChange={(e) => setStreakName(e.target.value)}
-          />
-          {`: ${currentStreak} day${currentStreak == 1 ? "" : "s"}`}
-        </>
-      ) : (
-        `${streakName}: ${currentStreak} day${currentStreak == 1 ? "" : "s"}`
-      )}
-      {!hidden && (
+    <div className="flex items-center gap-3">
+      <div className="flex gap-2">
+        <input
+          type="checkbox"
+          onChange={() => {
+            const newSet = new Set(selectedIDs);
+            if (!newSet.delete(id)) newSet.add(id);
+            setSelectedIDs(newSet);
+          }}
+        />
+        {editable ? (
+          <>
+            <input
+              value={streakName}
+              onChange={(e) => setStreakName(e.target.value)}
+            />
+            <p>
+              : {currentStreak} day{currentStreak == 1 ? "" : "s"}
+            </p>
+          </>
+        ) : (
+          <p>
+            {streakName}: {currentStreak} day{currentStreak == 1 ? "" : "s"}
+          </p>
+        )}
+      </div>
+      <div className="flex gap-2">
+        {!hidden && (
+          <button
+            onClick={() =>
+              fetch("/api/markStreakDone", {
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                method: "POST",
+                body: JSON.stringify({ id: id }),
+              }).then((res) => {
+                if (res.ok) {
+                  setUpdate();
+                }
+                setHidden(true);
+              })
+            }
+            className={" border rounded-sm pl-1 pr-1"}
+          >
+            ✓
+          </button>
+        )}
         <button
           onClick={() =>
-            fetch("/api/markStreakDone", {
+            fetch("/api/deleteStreak", {
               credentials: "include",
               headers: { "Content-Type": "application/json" },
               method: "POST",
               body: JSON.stringify({ id: id }),
             }).then((res) => {
-              if (res.ok) {
+              if (!res.ok) {
+                alert(res.json()["message"]);
+              } else {
                 setUpdate();
               }
-              setHidden(true);
             })
           }
+          className={" border rounded-sm pl-1 pr-1"}
         >
-          ✓
+          ✗
         </button>
-      )}
-      <button
-        onClick={() =>
-          fetch("/api/deleteStreak", {
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            method: "POST",
-            body: JSON.stringify({ id: id }),
-          }).then((res) => {
-            if (!res.ok) {
-              alert(res.json()["message"]);
-            } else {
-              setUpdate();
-            }
-          })
-        }
-        className={"delete-task " + theme}
-      >
-        ✗
-      </button>
-      {editable ? (
-        <button
-          onClick={() => {
-            fetch("/api/renameStreak", {
-              credentials: "include",
-              method: "POST",
-              headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ id: id, newName: streakName }),
-            }).then((res) => {
-              const data = res.json();
-              if (!res.ok) {
-                alert(data["message"] ?? "Failed to rename streak");
-              } else {
-                setEditable(false);
-                setUpdate();
-              }
-            });
-          }}
-        >
-          save
-        </button>
-      ) : (
-        <button
-          onClick={() => {
-            setStreakName(name);
-            setEditable(true);
-          }}
-        >
-          edit
-        </button>
-      )}
+        {editable ? (
+          <button
+            onClick={() => {
+              fetch("/api/renameStreak", {
+                credentials: "include",
+                method: "POST",
+                headers: {
+                  Accept: "application/json",
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ id: id, newName: streakName }),
+              }).then((res) => {
+                const data = res.json();
+                if (!res.ok) {
+                  alert(data["message"] ?? "Failed to rename streak");
+                } else {
+                  setEditable(false);
+                  setUpdate();
+                }
+              });
+            }}
+            className=" border rounded-sm pl-1 pr-1"
+          >
+            save
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              setStreakName(name);
+              setEditable(true);
+            }}
+            className=" border rounded-sm pl-1 pr-1"
+          >
+            edit
+          </button>
+        )}
+      </div>
     </div>
   );
 }

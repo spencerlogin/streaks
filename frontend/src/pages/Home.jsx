@@ -3,10 +3,9 @@ import Splash from "../components/Splash.jsx";
 import Navbar from "../components/Navbar.jsx";
 import { useState, useEffect } from "react";
 
-function Home({ theme }) {
+function Home() {
   const [userInfo, setUserInfo] = useState({});
   const [loggedIn, setLoggedIn] = useState(false);
-  const [themeState, setTheme] = useState(theme);
 
   function logout() {
     fetch("/api/logout", { method: "DELETE", credentials: "include" }).then(
@@ -40,11 +39,9 @@ function Home({ theme }) {
       <Navbar
         loggedIn={loggedIn}
         logout={logout}
-        action={setTheme}
-        theme={themeState}
       />
-      {!loggedIn && <Splash theme={themeState} />}
-      {loggedIn && <Dashboard userInfo={userInfo} theme={themeState} />}
+      {!loggedIn && <Splash />}
+      {loggedIn && <Dashboard userInfo={userInfo} />}
     </>
   );
 }
