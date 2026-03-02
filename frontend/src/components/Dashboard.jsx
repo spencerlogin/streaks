@@ -160,7 +160,7 @@ function Dashboard({ userInfo }) {
   }
 
   return (
-    <main>
+    <main className="dark:bg-(--dark-bg) dark:text-(--dark-text)">
       <div className="flex justify-between mr-25 ml-25">
         <div className="">
           <h1 className="text-3xl">{userInfo["firstName"]}'s Streaks</h1>
@@ -208,7 +208,7 @@ function Dashboard({ userInfo }) {
             })}
           </div>
         </div>
-        <div className="">
+        <div>
           <Calendar
             densitySets={densitySets}
             selected={dates}

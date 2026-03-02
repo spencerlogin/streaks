@@ -1,4 +1,10 @@
 @import "tailwindcss";
+:root {
+  --dark-bg: #222831;
+  --dark-accent-1: #31363F;
+  --dark-accent-2: #76ABAE;
+  --dark-text: #EEEEEE;
+}
 
 .checkbox-wrapper-54 input[type="checkbox"] {
     visibility: hidden;

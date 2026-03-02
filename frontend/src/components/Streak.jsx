@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-// import '../styles/Streak.css'
 
 function Streak({
   name,
@@ -44,15 +43,20 @@ function Streak({
 
   return (
     <div className="flex items-center gap-3">
-      <div className="flex gap-2">
-        <input
-          type="checkbox"
-          onChange={() => {
+      <div className="flex gap-2 items-center">
+        <button
+          className={
+            selectedIDs.has(id)
+              ? "min-h-4 max-h-4 min-w-4 max-w-4 border-white rounded-sm pl-1 pr-1 bg-blue-500" 
+              : "min-h-4 max-h-4 min-w-4 max-w-4 border rounded-sm pl-1 pr-1"
+          }
+          onClick={() => {
             const newSet = new Set(selectedIDs);
             if (!newSet.delete(id)) newSet.add(id);
             setSelectedIDs(newSet);
           }}
-        />
+        >
+        </button>
         {editable ? (
           <>
             <input
@@ -80,12 +84,12 @@ function Streak({
                 body: JSON.stringify({ id: id }),
               }).then((res) => {
                 if (res.ok) {
-                  setUpdate(u => !u);
+                  setUpdate((u) => !u);
                 }
                 setHidden(true);
               })
             }
-            className={" border rounded-sm pl-1 pr-1"}
+            className="border rounded-sm pl-1 pr-1"
           >
             ✓
           </button>
@@ -101,7 +105,7 @@ function Streak({
               if (!res.ok) {
                 res.json().then((data) => alert(data["message"]));
               } else {
-                setUpdate(u => !u);
+                setUpdate((u) => !u);
               }
             })
           }

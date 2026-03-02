@@ -8,16 +8,13 @@ from argon2.profiles import RFC_9106_HIGH_MEMORY
 from hashlib import sha256
 from uuid import uuid4
 from datetime import date
-from dotenv import dotenv_values
-
-config = dotenv_values(".env")
 
 app = Flask(__name__)
 
 
 def get_db_connection():
     return mysql.connector.connect(
-        user="root", password=config["SQL_ROOT_PW"], host="mysql", database="streaks"
+        user="spencer", password="twiKexU_5JXL5tM", host="mysql", database="streaks"
     )
 
 

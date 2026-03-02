@@ -7,12 +7,12 @@ function Navbar({ action, loggedIn, logout }) {
         <h1 className="text-5xl">Streaks</h1>
       </NavLink>
       <div className="flex gap-x-5 items-center">
-        <div className="checkbox-wrapper-54">
+        {/* <div className="checkbox-wrapper-54">
           <label className="switch">
             <input type="checkbox" onChange={action} />
             <span className="slider"></span>
           </label>
-        </div>
+        </div> */}
 
         {loggedIn && (
           <button className="font-serif text-2xl" id="logout" onClick={logout}>
