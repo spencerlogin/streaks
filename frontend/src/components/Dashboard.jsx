@@ -16,11 +16,7 @@ function Dashboard({ userInfo }) {
   const [dates, setDates] = useState();
   const [selectedIDs, setSelectedIDs] = useState(new Set());
 
-  function formatDateForDisplay(d) {
-    return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
-  }
-
-  function formatDateForDB(d) {
+  function formatDate(d) {
     let fmonth =
       d.getMonth() + 1 < 10 ? `0${d.getMonth() + 1}` : `${d.getMonth() + 1}`;
     let fdate = d.getDate() < 10 ? `0${d.getDate()}` : `${d.getDate()}`;
@@ -39,15 +35,9 @@ function Dashboard({ userInfo }) {
       .then((data) => {
         if (!ignore) {
           const streakElements = data["streaks"].map((streak) => {
-            const displayDates = streak["dates"].map((streakDate) => {
-              const parsedDate = new Date(streakDate);
-              parsedDate.setDate(parsedDate.getDate() + 1);
-              return formatDateForDisplay(parsedDate);
-            });
-
             return {
               name: streak["name"],
-              dates: displayDates,
+              dates: streak["dates"],
               id: streak["id"],
             };
           });
@@ -71,9 +61,7 @@ function Dashboard({ userInfo }) {
 
     filteredStreaks.forEach((streak) => {
       streak.dates.forEach((dateString) => {
-        const parsedDate = new Date(dateString);
-        const key = formatDateForDB(parsedDate);
-        counts[key] = (counts[key] || 0) + 1;
+        counts[dateString] = (counts[dateString] || 0) + 1;
       });
     });
 
@@ -117,10 +105,10 @@ function Dashboard({ userInfo }) {
     // calculate specific dates from 'from date' and 'to date'
     let curDate = new Date(dates.from);
     let toDate = new Date(dates.to);
-    let selectedDates = [formatDateForDB(curDate)];
+    let selectedDates = [formatDate(curDate)];
     while (curDate.getDate() != toDate.getDate()) {
       curDate.setDate(curDate.getDate() + 1);
-      selectedDates.push(formatDateForDB(curDate));
+      selectedDates.push(formatDate(curDate));
     }
     fetch("/api/markStreaksDone", {
       method: "POST",
@@ -140,10 +128,10 @@ function Dashboard({ userInfo }) {
   function handleRemoveDates() {
     let curDate = new Date(dates.from);
     let toDate = new Date(dates.to);
-    let selectedDates = [formatDateForDB(curDate)];
+    let selectedDates = [formatDate(curDate)];
     while (curDate.getDate() != toDate.getDate()) {
       curDate.setDate(curDate.getDate() + 1);
-      selectedDates.push(formatDateForDB(curDate));
+      selectedDates.push(formatDate(curDate));
     }
     fetch("/api/markStreaksNotDone", {
       method: "POST",
@@ -162,7 +150,7 @@ function Dashboard({ userInfo }) {
   return (
     <main className="dark:bg-(--dark-bg) dark:text-(--dark-text)">
       <div className="flex justify-between mr-25 ml-25">
-        <div className="">
+        <div>
           <h1 className="text-3xl">{userInfo["firstName"]}'s Streaks</h1>
           <input
             type="text"
@@ -174,13 +162,13 @@ function Dashboard({ userInfo }) {
           <div>
             <h2 className="text-2xl mt-5">TO DO:</h2>
             {filteredStreaks.map((streak) => {
-              if (!streak.dates.includes(formatDateForDisplay(new Date()))) {
+              if (!streak.dates.includes(formatDate(new Date()))) {
                 return (
                   <Streak
                     key={streak.id}
                     name={streak.name}
                     dates={streak.dates}
-                    formatDate={formatDateForDisplay}
+                    formatDate={formatDate}
                     id={streak.id}
                     setUpdate={setUpdate}
                     selectedIDs={selectedIDs}
@@ -191,13 +179,13 @@ function Dashboard({ userInfo }) {
             })}
             <h2 className="text-2xl mt-5">DONE:</h2>
             {filteredStreaks.map((streak) => {
-              if (streak.dates.includes(formatDateForDisplay(new Date()))) {
+              if (streak.dates.includes(formatDate(new Date()))) {
                 return (
                   <Streak
                     key={streak.id}
                     name={streak.name}
                     dates={streak.dates}
-                    formatDate={formatDateForDisplay}
+                    formatDate={formatDate}
                     id={streak.id}
                     setUpdate={setUpdate}
                     selectedIDs={selectedIDs}
@@ -213,7 +201,7 @@ function Dashboard({ userInfo }) {
             densitySets={densitySets}
             selected={dates}
             setSelected={setDates}
-            formatDate={formatDateForDB}
+            formatDate={formatDate}
           />
           {dates && (
             <>

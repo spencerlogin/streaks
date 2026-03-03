@@ -9,8 +9,7 @@ function Streak({
   selectedIDs,
   setSelectedIDs,
 }) {
-  const today = new Date();
-  const todayStr = formatDate(today);
+  const todayStr = formatDate(new Date());
 
   const [hidden, setHidden] = useState(dates.includes(todayStr));
   const [editable, setEditable] = useState(false);
@@ -81,7 +80,7 @@ function Streak({
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
                 method: "POST",
-                body: JSON.stringify({ id: id }),
+                body: JSON.stringify({ id: id, date: todayStr }),
               }).then((res) => {
                 if (res.ok) {
                   setUpdate((u) => !u);

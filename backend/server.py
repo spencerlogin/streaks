@@ -211,7 +211,7 @@ def get_streaks():
             query = "SELECT date FROM streak_history WHERE streakID=%s"
             data = [streakID]
             cursor.execute(query, data)
-            streakDates = [date[0] for date in cursor.fetchall()]
+            streakDates = [streak_date[0].isoformat() for streak_date in cursor.fetchall()]
             streaks.append({"name": streakName, "dates": streakDates, "id": streakID})
         cursor.close()
         cnx.close()
@@ -304,7 +304,7 @@ def markDone():
         return {"message": "User not logged in"}, 401
     # user logged in
     streakID = request.json["id"]
-    streakDate = date.today().isoformat()
+    streakDate = request.json["date"]
     query = "INSERT INTO streak_history VALUES (%s, %s)"
     data = (int(streakID), streakDate)
     try:
